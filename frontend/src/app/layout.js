@@ -1,5 +1,11 @@
 import "./globals.css";
-import { Providers } from "./providers";
+// Remove the previous dynamic import attempt
+// import dynamic from 'next/dynamic'; 
+import ClientProviders from "./ClientProviders"; // Import the new wrapper
+
+// const Providers = dynamic(() => import('./providers').then(mod => mod.Providers), {
+//   ssr: false,
+// });
 
 export const metadata = {
   title: "CryptoDevs DAO",
@@ -9,9 +15,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body ata-new-gr-c-s-check-loaded="14.1231.0"
-        data-gr-ext-installed="">
-        <Providers>{children}</Providers>
+      {/* Add suppressHydrationWarning to ignore attribute mismatches caused by extensions */}
+      <body suppressHydrationWarning={true}>
+        {/* Use the ClientProviders wrapper */}
+        <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
   );

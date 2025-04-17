@@ -1,55 +1,64 @@
 "use client";
 
 import * as React from "react";
-import {
-    RainbowKitProvider,
-    getDefaultWallets,
-    getDefaultConfig,
-    darkTheme,
-} from "@rainbow-me/rainbowkit";
 
-import {
-    argentWallet,
-    trustWallet,
-    ledgerWallet,
-} from "@rainbow-me/rainbowkit/wallets";
+// 1. Import necessary modules from wagmi and Web3Modal
+import { createWeb3Modal } from '@web3modal/wagmi/react';
+import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
+import { WagmiProvider } from 'wagmi';
+import { sepolia } from 'wagmi/chains';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-//importing the chains we need (here, just Sepolia)
-import {
-    sepolia
-} from "wagmi/chains";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider } from "wagmi";
+// 2. Get projectId from WalletConnect Cloud
+const projectId = "0f0aaf35f7f2e7bd965c2dcc63348e23"; // Replace with your actual Project ID
 
-const { wallets } = getDefaultWallets();
+if (!projectId) {
+  throw new Error('VITE_PROJECT_ID is not set');
+}
 
-export const config = getDefaultConfig({
-    appName: "ENS dapp",
-    projectId: "YOUR_PROJECT_ID",
-    // the above value needs to be replaced
-    wallets: [
-        ...wallets,
-        {
-            groupName: "Other",
-            wallets: [argentWallet, trustWallet, ledgerWallet],
-        },
-    ],
-    chains: [
-        sepolia
-    ],
-    ssr: true,
+// 3. Create wagmiConfig
+const metadata = {
+  name: 'CryptoDevs DAO',
+  description: 'CryptoDevs DAO Frontend',
+  url: 'https://web3modal.com', // origin must match your domain & subdomain
+  icons: ['https://avatars.githubusercontent.com/u/37784886']
+};
+
+// Define chains without TypeScript assertion
+const chains = [sepolia]; 
+export const config = defaultWagmiConfig({
+  chains,
+  projectId,
+  metadata,
+  // Optional: Add custom wallet connectors or configurations here
+  // ...
 });
 
-// TanStack Query is a library that makes it very easy to fetch, cache and handle data.
-// It gives you declarative, always-up-to-date auto-managed queries and mutations.
+// 4. Create Web3Modal instance
+createWeb3Modal({
+  wagmiConfig: config,
+  projectId,
+  // Optional: Add theme variables, default chain, etc.
+  themeMode: 'dark',
+  themeVariables: {
+    '--w3m-accent': '#00b8ff', // Match our accent color
+    '--w3m-border-radius-master': '8px', // Match our border radius
+  }
+});
+
+// TanStack Query setup remains the same
 export const queryClient = new QueryClient();
 
+// 5. Update Providers component
 export function Providers({ children }) {
-    return (
-        <WagmiProvider config={config}>
-            <QueryClientProvider client={queryClient}>
-                <RainbowKitProvider theme={darkTheme()}>{children}</RainbowKitProvider>
-            </QueryClientProvider>
-        </WagmiProvider>
-    );
+  return (
+    // WagmiProvider remains
+    <WagmiProvider config={config} reconnectOnMount={false}> 
+      {/* QueryClientProvider remains */}
+      <QueryClientProvider client={queryClient}>
+        {/* RainbowKitProvider is removed */}
+        {children}
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
 }
